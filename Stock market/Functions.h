@@ -17,6 +17,7 @@ using namespace System::Text;
 using namespace System;
 using namespace msclr::interop;
 
+//Connects the the TCP Server with the Provided Socket
 bool AuthLog(Socket^ clientsocket)
 {
     IPAddress^ ipaddress = IPAddress::Parse("192.168.1.10");
@@ -35,6 +36,7 @@ bool AuthLog(Socket^ clientsocket)
     }
 }
 
+//Sends the username and password to the server, '1' means it is a log in request, '$' is to specify the username or password endings
 bool Loggin(Socket^ clientsocket,System::String^ Username, System::String^ Password)
 {
     System::String^ Data = "1" + Username + "$" + Password + "$";
@@ -49,16 +51,6 @@ bool Loggin(Socket^ clientsocket,System::String^ Username, System::String^ Passw
         return true;
     }
     else if (buffer[0] == (Byte)'0')
-    {
-        return false;
-    }
-}
-
-bool EstablishConnection()
-{
-    WSADATA wsaData;
-    int iresult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (iresult != 0)
     {
         return false;
     }
@@ -111,9 +103,9 @@ std::vector<Stonks>Market;
 template<typename t>System::String^ intToCString(t Integer)
 {
     std::string theString = std::to_string(Integer);
-    System::String^ bunga = gcnew System::String(theString.c_str());
+    System::String^ Newstr = gcnew System::String(theString.c_str());
 
-    return bunga;
+    return Newstr;
 }
 
 std::string Cstring_to_String(System::String^ str)
@@ -129,6 +121,7 @@ System::String^ StdStringToCString(std::string Str)
     return str;
 }
 
+//This function checks if there is any data waiting to be received using the select function, if there is it receives it
 void IRec(Socket^ clientsocket)
 {
     array<Socket^>^ readSockets = gcnew array<Socket^>(1);
@@ -173,6 +166,7 @@ void IRec(Socket^ clientsocket)
     }
 }
 
+//This function is used when the client successfully logs in, it receives client information
 void ReceiveCusInfo(Socket^ clientsocket, Customer &Cus)
 {
     array<Byte>^ buffer;
@@ -232,6 +226,7 @@ void ReceiveCusInfo(Socket^ clientsocket, Customer &Cus)
     Cus.Customershares.resize(Pos);
 }
 
+//This function returns an array of objects which is then used to list the stocks
 System::Object^ stocklist()
 {
     array<System::Object^>^ StockArray;
@@ -256,6 +251,7 @@ int CstringToInt(System::String^ quantity)
     }
 }
 
+//this function calculates how much money is needed to complete the transaction
 float getprice(System::String^ Name, System::String^ Quantity)
 {
     if (Quantity != "")
@@ -272,6 +268,7 @@ float getprice(System::String^ Name, System::String^ Quantity)
     }
 }
 
+//this function checks if the customer has enough shares to sell
 bool DoesCustomerHaveShare(System::Object^ Share, System::String^ Quantity, Customer& Auth)
 {
     if (Quantity != "")
@@ -287,6 +284,7 @@ bool DoesCustomerHaveShare(System::Object^ Share, System::String^ Quantity, Cust
     return false;
 }
 
+//this function deducts the amount of stocks sold from the customer and also adjusts the customer balance
 float SellStock(System::String^ Quantity, System::String^ StockName, Customer& Auth)
 {
     for (int i = 0; i < Market.size(); i++)
@@ -310,6 +308,7 @@ float SellStock(System::String^ Quantity, System::String^ StockName, Customer& A
     }
 }
 
+//this function adds the amount of stocks bought to the customer and adjusts the customer balance
 float BuyStock(System::String^ Quantity, System::String^ StockName, Customer& Auth)
 {
     for (int i = 0; i < Market.size(); i++)
@@ -330,33 +329,4 @@ float BuyStock(System::String^ Quantity, System::String^ StockName, Customer& Au
             return Auth.Balance -= (Market[i].price * Qant);
         }
     }
-}
-
-void Login_client(System::String^ Username, System::String^ Password)
-{
-    using namespace System::IO;
-    using namespace System::Net;
-    using namespace System::Text;
-    using namespace System::Net::Sockets;
-
-
-    TcpClient^ tcpclnt = gcnew TcpClient();
-    tcpclnt->Connect("192.168.1.10", 12345);
-
-    Stream^ stm = tcpclnt->GetStream();
-    Sleep(100);
-    ASCIIEncoding^ asen = gcnew ASCIIEncoding();
-        
-    array<System::Byte>^ ba = asen->GetBytes(Username);
-    array<System::Byte>^ password = asen->GetBytes(Password);
-
-    stm->Write(ba, 0, ba->Length); //write to server
-    stm->Write(password, 0, password->Length);
-
-    array<System::Byte>^ bb;
-    System::Array::Resize(bb, 100); 
-    int k = stm->Read(bb, 0, 100); //read from server
-
-    System::String^ IP = Encoding::ASCII->GetString(bb,0,k);
-    tcpclnt->Close();
 }

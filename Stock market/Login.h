@@ -32,8 +32,6 @@ namespace Stockmarketclient {
 			if (components)
 			{
 				delete components;
-				::ExitThread(0);
-				::ExitProcess(0);
 			}
 		}
 	private: System::Windows::Forms::Button^ Login_button;

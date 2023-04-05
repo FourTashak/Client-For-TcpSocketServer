@@ -239,7 +239,7 @@ namespace Stockmarketclient {
 
 	}
 
-	private: void Setbalance()
+	private: void Setbalance() //sets the balance seen in the UI according to the customers balance
 	{
 		Balance->Text = "Balance " + Convert::ToString(Cus.Balance);
 	}
@@ -292,11 +292,13 @@ namespace Stockmarketclient {
 	}
 	private: System::Void quantity_textbox_Keypress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e)
 	{
+		//only accepts numbers
 		if (!(e->KeyChar == 8 || (e->KeyChar >= 48 && e->KeyChar <= 57)))
 			e->Handled = true;
 	}
 	private: System::Void Refresh_Btn_Click(System::Object^ sender, System::EventArgs^ e) 
 	{
+		//sends '4' to the server meaning it is requesting the latest stock prices
 		array<Byte>^ req = Encoding::ASCII->GetBytes("4");
 		Realsock->Send(req);
 	}
